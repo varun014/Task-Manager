@@ -56,6 +56,7 @@ MONGO_URI=mongodb://localhost:27017/team_task_manager
 JWT_SECRET=your_super_secret_jwt_key_here
 JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:5173
+ALLOWED_ORIGINS=
 NODE_ENV=development
 ```
 

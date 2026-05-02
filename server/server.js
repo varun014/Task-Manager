@@ -14,11 +14,42 @@ connectDB();
 
 const app = express();
 
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173'
-  })
-);
+const normalizeOrigin = (value) => value.trim().replace(/\/$/, '');
+
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.ALLOWED_ORIGINS
+]
+  .filter(Boolean)
+  .flatMap((value) => value.split(','))
+  .map((value) => normalizeOrigin(value))
+  .filter(Boolean);
+
+const corsOptions = {
+  origin(origin, callback) {
+    // Allow non-browser tools (no Origin header) and same-origin/server requests.
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const requestOrigin = normalizeOrigin(origin);
+
+    // If no allow-list is configured, allow all origins (safe for this project API).
+    if (!allowedOrigins.length) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(requestOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 app.get('/', (req, res) => {
