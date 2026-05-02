@@ -3,9 +3,16 @@ const Task = require('../models/Task');
 const validateObjectId = require('../utils/validateObjectId');
 const asyncHandler = require('../utils/asyncHandler');
 
+const getMemberUserId = (memberEntry) => {
+  if (!memberEntry?.user) return null;
+  if (typeof memberEntry.user === 'string') return memberEntry.user;
+  if (memberEntry.user._id) return memberEntry.user._id.toString();
+  return memberEntry.user.toString();
+};
+
 const getUserProjectRole = (project, userId) => {
   const member = project.members.find(
-    (entry) => entry.user.toString() === userId.toString()
+    (entry) => getMemberUserId(entry) === userId.toString()
   );
 
   return member ? member.role : null;
@@ -96,7 +103,7 @@ const createTask = asyncHandler(async (req, res) => {
     }
 
     const isMember = project.members.some(
-      (entry) => entry.user.toString() === assignedTo.toString()
+      (entry) => getMemberUserId(entry) === assignedTo.toString()
     );
 
     if (!isMember) {
@@ -244,7 +251,7 @@ const updateTask = asyncHandler(async (req, res) => {
         }
 
         const isMember = project.members.some(
-          (entry) => entry.user.toString() === assignedTo.toString()
+          (entry) => getMemberUserId(entry) === assignedTo.toString()
         );
 
         if (!isMember) {

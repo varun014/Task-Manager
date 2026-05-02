@@ -4,9 +4,16 @@ const User = require('../models/User');
 const validateObjectId = require('../utils/validateObjectId');
 const asyncHandler = require('../utils/asyncHandler');
 
+const getMemberUserId = (memberEntry) => {
+  if (!memberEntry?.user) return null;
+  if (typeof memberEntry.user === 'string') return memberEntry.user;
+  if (memberEntry.user._id) return memberEntry.user._id.toString();
+  return memberEntry.user.toString();
+};
+
 const getUserProjectRole = (project, userId) => {
   const member = project.members.find(
-    (entry) => entry.user.toString() === userId.toString()
+    (entry) => getMemberUserId(entry) === userId.toString()
   );
 
   return member ? member.role : null;
@@ -193,7 +200,7 @@ const addMember = asyncHandler(async (req, res) => {
   }
 
   const alreadyMember = project.members.some(
-    (entry) => entry.user.toString() === user._id.toString()
+    (entry) => getMemberUserId(entry) === user._id.toString()
   );
 
   if (alreadyMember) {
@@ -251,7 +258,7 @@ const removeMember = asyncHandler(async (req, res) => {
   }
 
   const hasMember = project.members.some(
-    (entry) => entry.user.toString() === userId
+    (entry) => getMemberUserId(entry) === userId
   );
 
   if (!hasMember) {
@@ -262,7 +269,7 @@ const removeMember = asyncHandler(async (req, res) => {
   }
 
   project.members = project.members.filter(
-    (entry) => entry.user.toString() !== userId
+    (entry) => getMemberUserId(entry) !== userId
   );
 
   await project.save();
